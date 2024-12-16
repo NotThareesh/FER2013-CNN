@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rendering Local Images Using Flask</title>
+    <!-- <style>
+        #uplo
+    </style> -->
+</head>
+<body> 
+    {% if text != -1 %}
+        <h1>Emotion: {{ text }}</h1>
+        <img src="{{ image }}" alt="Image from external source">
+    {% else %}
+        <h1>No Face Detected. Try with a different image again!</h1>
+    {% endif %}
+
+</body>
+</html>

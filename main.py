@@ -1,42 +1,38 @@
-import cv2
-import numpy as np
+from flask import Flask, render_template, request
 from tensorflow.keras.models import load_model
+import numpy as np
+import cv2
 
-model = load_model('FERClassifier.keras')
+app = Flask(__name__)
 
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+def processImage(faceImage):
+    face_resized = cv2.resize(faceImage, (48, 48))
+    face_normalized = face_resized / 255.0
 
-# List of emotions
-emotion_labels = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
+    face_input = np.expand_dims(face_normalized, axis=-1)  # Add channel dimension for grayscale (48x48x1)
+    face_input = np.expand_dims(face_input, axis=0) # Add batch dimension (1x48x48x1)
 
-# Initialize webcam
-cap = cv2.VideoCapture(1)
+    return face_input
 
-while True:
-    # Capture frame-by-frame
-    ret, frame = cap.read()
+def draw_and_find_emotion(imagePath):
+    model = load_model("FERClassifier.keras")
 
-    # Convert to grayscale
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-    # Detect faces
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+    emotion_labels = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
 
-    for (x, y, w, h) in faces:
-        # Draw rectangle around the face
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+    img = cv2.imread(imagePath)
 
-        # Crop face from the frame
-        face_roi = gray[y:y+h, x:x+w]
+    gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        # Resize the face image to normalize it
-        face_resized = cv2.resize(face_roi, (48, 48))
-        face_normalized = face_resized / 255.0
+    face = face_classifier.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=5, minSize=(40, 40))
 
-        # Reshape to match model input shape
-        face_input = np.expand_dims(face_normalized, axis=-1)  # Add channel dimension for grayscale (48x48x1)
-        face_input = np.expand_dims(face_input, axis=0)  # Add batch dimension (1x48x48x1)
-
+    # If Face Detected
+    if len(face) >= 1:
+        x,y,w,h = face[0]
+        face_roi = gray_image[y : y + h, x : x + w]
+        face_input = processImage(face_roi)
+    
         # Predict emotion
         emotion_pred = model.predict(face_input)
         emotion_index = np.argmax(emotion_pred)
@@ -44,16 +40,36 @@ while True:
         # Get the predicted emotion label
         emotion = emotion_labels[emotion_index]
 
-        # Display the emotion on the frame
-        cv2.putText(frame, emotion, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2)
+        # Draw Rectangle                    
+        for (x, y, w, h) in face:
+            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 4)
 
-    # Show the frame
-    cv2.imshow('Emotion Recognition', frame)
+        # Save the Image
+        output_path = f"static/saved_images/{imagePath[9:]}"
+        cv2.imwrite(output_path, img)
 
-    # Break loop on 'q' key press
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+        return emotion
+    else:
+        return -1
 
-# Release the webcam and close all OpenCV windows
-cap.release()
-cv2.destroyAllWindows()
+@app.route("/")
+def main():
+    return render_template("index.html")
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if request.method == 'POST':
+        uploaded_file = request.files['uploaded_file']
+
+        if uploaded_file.filename != '':
+            imagePath = f"./uploads/{uploaded_file.filename}"
+
+            uploaded_file.save(imagePath)
+            emotion = draw_and_find_emotion(imagePath=imagePath)
+
+            return render_template('upload_page.html', image=f"static/saved_images/{imagePath[10:]}", text=emotion)
+
+        else:
+            return "No File Selected!", 404
+
+app.run(debug=True, port=8080)
