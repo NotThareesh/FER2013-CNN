@@ -70,6 +70,6 @@ def upload_file():
             return render_template('upload_page.html', image=f"static/saved_images/{imagePath[10:]}", text=emotion)
 
         else:
-            return "No File Selected!", 404
+            return render_template("index.html")
 
 app.run(debug=True, port=8080)
