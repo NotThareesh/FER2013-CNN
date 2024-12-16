@@ -9,8 +9,8 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 # List of emotions
 emotion_labels = ['Anger', 'Disgust', 'Fear', 'Happiness', 'Neutral', 'Sadness', 'Surprise']
 
-# Initialize webcam
-cap = cv2.VideoCapture(1)
+# Initialize webcam. Change it to 0 or 1 depending upon your computer's compatibilities.
+cap = cv2.VideoCapture(0)
 
 while True:
     # Capture frame-by-frame

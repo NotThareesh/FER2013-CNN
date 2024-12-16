@@ -1,4 +1,6 @@
-saved_images/
+static/saved_images
 uploads/
 data/
+venv/
+.idea/
 FERClassifier.keras
