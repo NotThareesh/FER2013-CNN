@@ -1,7 +1,7 @@
 # FER2013 CNN Emotion Recognition
 
 A Flask-based web application for real-time emotion recognition. The project uses a trained deep learning model to classify emotions from facial images obtained from the FER Dataset. Currently, it can detect emotions like Anger, Disgust, Fear, Happiness, Sadness, Surprise, and Neutral.
-In addition to this, this project also features a real-time emotion recognition app that can be run through your webcam. Currently this CNN predicts with **66.04%** accuracy on the **test dataset**.
+In addition to this, this project also features a real-time emotion recognition app that can be run through your webcam. Currently this CNN predicts with **66.33%** accuracy on the **test dataset**.
 
 ---
     
@@ -98,8 +98,8 @@ test_loss, test_accuracy = model.evaluate(test_dataset, verbose=1)
 print(f"Test Accuracy (Direct Evaluation): {test_accuracy * 100:.2f}%")
 ```
 ```
-113/113 ━━━━━━━━━━━━━━━━━━━━ 8s 68ms/step - accuracy: 0.6602 - loss: 1.6984
-Test Accuracy (Direct Evaluation): 66.04%
+113/113 ━━━━━━━━━━━━━━━━━━━━ 4s 37ms/step - accuracy: 0.6657 - loss: 1.2901
+Test Accuracy (Direct Evaluation): 66.33%
 ```
 
 ---
